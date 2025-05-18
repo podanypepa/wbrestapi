@@ -86,7 +86,7 @@ make build
 make run
 
 # or run in dev/watch mode
-make air
+make dev
 ```
 
 ---
