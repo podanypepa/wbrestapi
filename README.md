@@ -108,7 +108,7 @@ rm -rf ./data
 ## 🛠️ CLI Tools for testing
 
 - [create_user.sh](./create_user.sh): shell script for creating a new user from the command line.
-- [get_user](./get_user.sh): shell script for retrieving users from database by uuid from command line.
+- [get_user.sh](./get_user.sh): shell script for retrieving users from database by uuid from command line.
 
 ---
 
