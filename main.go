@@ -48,5 +48,10 @@ func main() {
 		slog.Error("app.Shutdown", "err", err)
 	}
 
+	sqlDB, _ := db.DB()
+	if err := sqlDB.Close(); err != nil {
+		slog.Error("sqlDB.Close", "err", err)
+	}
+
 	slog.Info("Server exiting")
 }
