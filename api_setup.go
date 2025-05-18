@@ -16,7 +16,7 @@ func apiSetup() *fiber.App {
 	app.Post("/save", createUser)
 	app.Get("/:id", getUserByID)
 
-	app.Get("/health", func(c *fiber.Ctx) error {
+	app.Get("/healthz", func(c *fiber.Ctx) error {
 		sqlDB, err := db.DB()
 		if err != nil || sqlDB.Ping() != nil {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
