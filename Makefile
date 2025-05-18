@@ -6,6 +6,9 @@ dev:
 build:
 	go build .
 
+run:
+	go run .
+
 lint:
 	go tool revive ./...
 	go tool golangci-lint  run ./...
