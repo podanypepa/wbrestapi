@@ -52,6 +52,11 @@ DB_PORT=5432
 DB_SSL=disable
 ```
 
+There is some .env config examples for running on localhost or in Docker.
+
+- [.env.localhost](./.env.localhost)
+- [.env.docker](./.env.docker)
+
 ### 3. Run the project with Docker Compose
 
 ```bash
