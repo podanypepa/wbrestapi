@@ -12,6 +12,7 @@ tool (
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.26.1
@@ -96,7 +97,6 @@ require (
 	github.com/golangci/revgrep v0.8.0 // indirect
 	github.com/golangci/unconvert v0.0.0-20240309020433-c5143eacb3ed // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gordonklaus/ineffassign v0.1.0 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
 	github.com/gostaticanalysis/comment v1.5.0 // indirect

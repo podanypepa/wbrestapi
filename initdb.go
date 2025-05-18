@@ -23,12 +23,11 @@ func initDB() error {
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return fmt.Errorf("initDB: Failed to connect to database: %w", err)
+		return fmt.Errorf("Failed to connect to database: %w", err)
 	}
 
-	err = db.AutoMigrate(&User{})
-	if err != nil {
-		return fmt.Errorf("initDB: AutoMigrate failed: %w", err)
+	if err = db.AutoMigrate(&User{}); err != nil {
+		return fmt.Errorf("AutoMigrate failed: %w", err)
 	}
 
 	return nil
