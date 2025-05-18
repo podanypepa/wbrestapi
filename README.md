@@ -73,6 +73,8 @@ make docker-up
 
 ```bash
 make test
+# or
+go test -v -run ./...
 ```
 
 This test spins up the application and tests the HTTP endpoints (`/save`, `/{id}`) using a Go `http.Client`.

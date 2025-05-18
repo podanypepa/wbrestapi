@@ -12,6 +12,9 @@ lint:
 	go tool gocritic check ./...
 	go tool govulncheck ./...
 
+test:
+	go test -v -run ./...
+
 docker-up:
 	docker compose --env-file ./.env.docker up
 
