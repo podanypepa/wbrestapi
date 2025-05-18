@@ -11,9 +11,11 @@ tool (
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/stretchr/testify v1.10.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.26.1
 )
@@ -29,7 +31,6 @@ require (
 	github.com/Antonboom/testifylint v1.5.2 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/Crocmagnon/fatcontext v0.7.1 // indirect
-	github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect
 	github.com/Djarvur/go-err113 v0.0.0-20210108212216-aea10b59be24 // indirect
 	github.com/GaijinEntertainment/go-exhaustruct/v3 v3.3.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
@@ -188,7 +189,6 @@ require (
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
 	github.com/stbenjam/no-sprintf-host-port v0.2.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/tdakkota/asciicheck v0.4.1 // indirect
 	github.com/tdewolff/parse/v2 v2.7.15 // indirect
@@ -203,7 +203,6 @@ require (
 	github.com/uudashr/iface v1.3.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.62.0 // indirect
-	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/xen0n/gosmopolitan v1.2.2 // indirect
 	github.com/yagipy/maintidx v1.0.0 // indirect
 	github.com/yeya24/promlinter v0.3.0 // indirect
