@@ -19,6 +19,9 @@ func apiSetup() *fiber.App {
 
 	app.Use(logger.New())
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("wbretapi")
+	})
 	app.Get("/healthz", func(c *fiber.Ctx) error {
 		sqlDB, err := db.DB()
 		if err != nil || sqlDB.Ping() != nil {
