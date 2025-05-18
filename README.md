@@ -4,7 +4,7 @@ A simple RESTful microservice built in Go using [Fiber v2](https://github.com/go
 
 ## 📄 Project Assignment
 
-This project implements the following task:  
+This project implements the following task:
 **[View assignment](./assigment.md)**
 
 ### Functional Requirements
@@ -79,20 +79,6 @@ This test spins up the application and tests the HTTP endpoints (`/save`, `/{id}
 
 ---
 
-## 🛠 Project Structure
-
-```
-.
-├── main.go             # Main application entry point
-├── Dockerfile          # Multi-stage Docker build
-├── docker-compose.yml  # Compose config with PostgreSQL
-├── .env.example        # Sample environment variables
-├── Makefile            # Convenient task runner
-└── integration_test.go # HTTP-based integration test
-```
-
----
-
 ## 📦 Build and Run Locally (without Docker)
 
 ```bash
@@ -127,6 +113,4 @@ rm -rf ./data
 - Rejects new requests during shutdown
 - Dockerized and portable
 - Integration tested
-
----
 

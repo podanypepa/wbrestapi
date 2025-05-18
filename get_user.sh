@@ -10,4 +10,4 @@ fi
 
 echo "Fetching user with UUID: $UUID"
 
-curl -X "GET" ${API_URL}/${UUID}
+curl -v -X "GET" ${API_URL}/${UUID}
