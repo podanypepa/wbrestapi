@@ -10,8 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -30,15 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	app := fiber.New(fiber.Config{
-		IdleTimeout:           idleTimeout,
-		DisableStartupMessage: true,
-	})
-
-	app.Use(logger.New())
-
-	app.Post("/save", createUser)
-	app.Get("/:id", getUserByID)
+	app := apiSetup()
 
 	port := cmp.Or(os.Getenv("PORT"), defaultPort)
 	go func() {
