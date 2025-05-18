@@ -5,7 +5,7 @@ A simple RESTful microservice built in Go using [Fiber v2](https://github.com/go
 ## 📄 Project Assignment
 
 This project implements the following task:  
-**[View assignment (PDF)](./Golang%20Zadani%20(1).pdf)**
+**[View assignment](./assigment.md)**
 
 ### Functional Requirements
 
