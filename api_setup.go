@@ -13,9 +13,6 @@ func apiSetup() *fiber.App {
 
 	app.Use(logger.New())
 
-	app.Post("/save", createUser)
-	app.Get("/:id", getUserByID)
-
 	app.Get("/healthz", func(c *fiber.Ctx) error {
 		sqlDB, err := db.DB()
 		if err != nil || sqlDB.Ping() != nil {
@@ -29,6 +26,8 @@ func apiSetup() *fiber.App {
 			"status": "ok",
 		})
 	})
+	app.Post("/save", createUser)
+	app.Get("/:id", getUserByID)
 
 	return app
 }
