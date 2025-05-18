@@ -16,7 +16,7 @@ This project implements the following task:
 
 ## ⚙️ Requirements
 
-- [Go 1.21+](https://golang.org/dl/)
+- [Go 1.24+](https://golang.org/dl/)
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 - `make` (optional but recommended)
