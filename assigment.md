@@ -60,7 +60,8 @@ GET /{id}
 - Please prepare a **buildable binary** which we can run and test (for example with curl commands).
 - Prepare a **Dockerfile** building the image containing the binary.
   - If we run the container from the image we expect it exposes the HTTP server with endpoints above.
-- **Bonus**: Create integration test testing both API endpoints.
+- **Bonus**: 
+  - Create integration test testing both API endpoints.
   - The application is executed as the whole program as close to how it will run in production as possible.
   - Parsing ENVs, arguments, connecting to all dependencies etc.
   - Endpoints are tested via HTTP client from testing code.
