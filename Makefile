@@ -6,6 +6,9 @@ dev:
 build:
 	go build .
 
+clean:
+	rm -f ./wbrestapi
+
 run:
 	go run .
 
