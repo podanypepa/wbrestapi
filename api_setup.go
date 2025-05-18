@@ -1,8 +1,14 @@
 package main
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+)
+
+const (
+	idleTimeout = 5 * time.Second
 )
 
 func apiSetup() *fiber.App {

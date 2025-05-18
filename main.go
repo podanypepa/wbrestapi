@@ -8,13 +8,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/joho/godotenv"
 )
 
 const (
-	idleTimeout = 5 * time.Second
 	defaultPort = "3000"
 )
 
