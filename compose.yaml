@@ -2,7 +2,7 @@ services:
 
   db:
     image: postgres:17
-    container_name: db
+    container_name: wbrestapi-db
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -19,6 +19,7 @@ services:
 
   app:
     build: .
+    container_name: wbrestapi-app
     depends_on:
       db:
         condition: service_healthy

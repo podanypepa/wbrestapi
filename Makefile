@@ -23,6 +23,3 @@ docker-up:
 
 docker-down:
 	docker compose --env-file ./.env.docker down
-
-docker-db:
-	docker compose --env-file ./.env.docker start db
