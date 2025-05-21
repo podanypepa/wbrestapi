@@ -2,14 +2,10 @@
 package repository
 
 import (
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
 )
-
-// ErrNotFound ...
-var ErrNotFound = fmt.Errorf("not found")
 
 // UserRepository ...
 type UserRepository struct {
