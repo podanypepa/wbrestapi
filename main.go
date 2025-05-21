@@ -10,6 +10,8 @@ import (
 	"syscall"
 
 	"github.com/joho/godotenv"
+	"github.com/podanypepa/wbrestapi/pkg/api"
+	"github.com/podanypepa/wbrestapi/pkg/repository"
 )
 
 const (
@@ -21,16 +23,27 @@ func main() {
 		slog.Warn(".env file not found. Falling back to system environment variables.")
 	}
 
-	if err := initDB(); err != nil {
+	db, err := initDB()
+	if err != nil {
 		slog.Error("initDB", "err", err)
 		os.Exit(1)
 	}
 
-	app := apiSetup()
+	userRepository, err := repository.NewUserRepository(repository.UserRepositoryConfig{
+		Db: db,
+	})
+	if err != nil {
+		slog.Error("NewUserRepository", "err", err)
+		os.Exit(2)
+	}
+
+	apiServer := api.NewServer(api.Config{
+		UserRepository: userRepository,
+	})
 
 	port := cmp.Or(os.Getenv("PORT"), defaultPort)
 	go func() {
-		if err := app.Listen(":" + port); err != nil {
+		if err := apiServer.Listen(":" + port); err != nil {
 			slog.Error("app.Listen", "err", err, "port", port)
 			os.Exit(2)
 		}
@@ -44,7 +57,7 @@ func main() {
 
 	slog.Info("Gracefully shutting down...")
 
-	if err := app.Shutdown(); err != nil {
+	if err := apiServer.Shutdown(); err != nil {
 		slog.Error("app.Shutdown", "err", err)
 	}
 

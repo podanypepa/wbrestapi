@@ -8,9 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
-
-func initDB() error {
+func initDB() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_USER"),
@@ -20,15 +18,14 @@ func initDB() error {
 		os.Getenv("DB_SSL"),
 	)
 
-	var err error
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return fmt.Errorf("Failed to connect to database: %w", err)
+		return nil, fmt.Errorf("Failed to connect to database: %w", err)
 	}
 
 	if err = db.AutoMigrate(&User{}); err != nil {
-		return fmt.Errorf("AutoMigrate failed: %w", err)
+		return nil, fmt.Errorf("AutoMigrate failed: %w", err)
 	}
 
-	return nil
+	return db, nil
 }

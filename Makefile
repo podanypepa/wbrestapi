@@ -22,7 +22,7 @@ test:
 	go test -v -run ./...
 
 docker-up:
-	docker compose --env-file ./.env.docker up
+	docker compose --env-file ./.env.docker up -d
 
 docker-down:
 	docker compose --env-file ./.env.docker down

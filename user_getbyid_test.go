@@ -6,45 +6,46 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
+	"github.com/alecthomas/assert"
+	"github.com/gofiber/fiber/v2"
+	"github.com/podanypepa/wbrestapi/pkg/api"
+	"github.com/podanypepa/wbrestapi/pkg/repository"
 )
 
 func TestGetByID(t *testing.T) {
 	t.Run("GetByID_OK", func(t *testing.T) {
-		mockDb, mock, cleanup := setupMockDB(t)
-		defer cleanup()
+		userRepository, _ := repository.NewUserRepositoryMock()
+		server := api.NewServer(api.Config{
+			UserRepository: userRepository,
+		})
 
-		db = mockDb
-		app := apiSetup()
-		dbUser := User{
-			ID:          1,
-			ExternalID:  "123e4567-e89b-12d3-a456-426614174000",
-			Name:        "John Doe",
-			Email:       "john@example.com",
-			DateOfBirth: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
-		}
-
-		rows := sqlmock.NewRows([]string{"id", "external_id", "name", "email", "date_of_birth"}).
-			AddRow(dbUser.ID, dbUser.ExternalID, dbUser.Name, dbUser.Email, dbUser.DateOfBirth)
-
-		mock.ExpectQuery(`SELECT \* FROM \"users\" WHERE external_id = \$1 ORDER BY \"users\".\"id\" LIMIT \$2`).
-			WithArgs(dbUser.ExternalID, 1).
-			WillReturnRows(rows)
-
-		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s", dbUser.ExternalID), nil)
-
-		res, err := app.Test(req, -1)
-
+		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s", repository.UserMock.ExternalID), nil)
+		res, err := server.Test(req, -1)
 		assert.NoError(t, err)
+
+		assert.Equal(t, fiber.StatusOK, res.StatusCode)
+
 		bodyBytes, err := io.ReadAll(res.Body)
 		assert.NoError(t, err)
 
 		var apiUser User
 		err = json.Unmarshal(bodyBytes, &apiUser)
 		assert.NoError(t, err)
-		assert.Equal(t, dbUser.ExternalID, apiUser.ExternalID)
+		assert.Equal(t, repository.UserMock.ExternalID, apiUser.ExternalID)
 	})
+
+	t.Run("GetByID_NOT_FOUND", func(t *testing.T) {
+		userRepository, _ := repository.NewUserRepositoryMock()
+		server := api.NewServer(api.Config{
+			UserRepository: userRepository,
+		})
+
+		req, _ := http.NewRequest("GET", fmt.Sprintf("/%s", "1"), nil)
+		res, err := server.Test(req, -1)
+		assert.NoError(t, err)
+
+		assert.Equal(t, fiber.StatusNotFound, res.StatusCode)
+	})
+
 }

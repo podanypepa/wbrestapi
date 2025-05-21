@@ -5,46 +5,19 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
 	"unicode/utf8"
 
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/gofiber/fiber/v2"
+	"github.com/alecthomas/assert"
+	"github.com/gofiber/fiber"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/podanypepa/wbrestapi/pkg/api"
+	"github.com/podanypepa/wbrestapi/pkg/repository"
 )
 
-func setupMockDB(t *testing.T) (*gorm.DB, sqlmock.Sqlmock, func()) {
-	db, mock, err := sqlmock.New()
-	assert.NoError(t, err)
-
-	gormDB, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: db,
-	}), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	assert.NoError(t, err)
-
-	cleanup := func() {
-		db.Close()
-	}
-
-	return gormDB, mock, cleanup
-}
-
 func TestCreateUser(t *testing.T) {
-	mockDb, mock, cleanup := setupMockDB(t)
-	defer cleanup()
-
-	db = mockDb
-	app := apiSetup()
-
 	t.Run("CreateUser", func(t *testing.T) {
 		user := &User{
 			ExternalID:  uuid.NewString(),
@@ -53,22 +26,18 @@ func TestCreateUser(t *testing.T) {
 			DateOfBirth: time.Date(2025, 5, 18, 13, 10, 50, 801129000, time.UTC),
 		}
 
-		mock.ExpectBegin()
-		mock.
-			ExpectQuery(
-				regexp.QuoteMeta(`INSERT INTO "users" ("external_id","name","email","date_of_birth") VALUES ($1,$2,$3,$4) RETURNING "id"`),
-			).
-			WithArgs(user.ExternalID, user.Name, user.Email, user.DateOfBirth).
-			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-		mock.ExpectCommit()
-
 		b, _ := json.Marshal(user)
+
 		req, _ := http.NewRequest("POST", "/save", strings.NewReader(string(b)))
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add("Content-Length", fmt.Sprintf("%d", utf8.RuneCountInString(string(b))))
 
-		res, err := app.Test(req, -1)
+		userRepository, _ := repository.NewUserRepositoryMock()
+		server := api.NewServer(api.Config{
+			UserRepository: userRepository,
+		})
 
+		res, err := server.Test(req, -1)
 		assert.NoError(t, err)
 		assert.Equal(t, res.StatusCode, fiber.StatusCreated)
 
@@ -91,7 +60,12 @@ func TestCreateUser(t *testing.T) {
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add("Content-Length", fmt.Sprintf("%d", utf8.RuneCountInString(string(b))))
 
-		res, err := app.Test(req, -1)
+		userRepository, _ := repository.NewUserRepositoryMock()
+		server := api.NewServer(api.Config{
+			UserRepository: userRepository,
+		})
+
+		res, err := server.Test(req, -1)
 		assert.NoError(t, err)
 		assert.Equal(t, res.StatusCode, fiber.StatusBadRequest)
 

@@ -2,6 +2,16 @@
 
 A simple RESTful microservice built in Go using [Fiber v2](https://github.com/gofiber/fiber), [GORM](https://gorm.io), and PostgreSQL.
 
+---
+
+### Update:
+
+I’ve rewritten the database connection handling to make mocking and testing easier.
+The original source code is in the v1 branch.
+I’m aware that the longer I spend with the code, the more things I would gradually polish and complete.
+
+---
+
 ## 📄 Project Assignment
 
 This project implements the following task:
