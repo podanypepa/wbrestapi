@@ -11,6 +11,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// Error ...
+type Error struct {
+	Message string `json:"error"`
+}
+
+// Error ...
+func (e *Error) Error() string {
+	return e.Message
+}
+
 // Config of API server
 type Config struct {
 	Port           string

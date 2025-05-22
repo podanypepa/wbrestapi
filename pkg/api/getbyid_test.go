@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -9,14 +9,13 @@ import (
 
 	"github.com/alecthomas/assert"
 	"github.com/gofiber/fiber/v2"
-	"github.com/podanypepa/wbrestapi/pkg/api"
 	"github.com/podanypepa/wbrestapi/pkg/repository"
 )
 
 func TestGetByID(t *testing.T) {
 	t.Run("GetByID_OK", func(t *testing.T) {
 		userRepository, _ := repository.NewUserRepositoryMock()
-		server := api.NewServer(api.Config{
+		server := NewServer(Config{
 			UserRepository: userRepository,
 		})
 
@@ -29,7 +28,7 @@ func TestGetByID(t *testing.T) {
 		bodyBytes, err := io.ReadAll(res.Body)
 		assert.NoError(t, err)
 
-		var apiUser User
+		var apiUser repository.User
 		err = json.Unmarshal(bodyBytes, &apiUser)
 		assert.NoError(t, err)
 		assert.Equal(t, repository.UserMock.ExternalID, apiUser.ExternalID)
@@ -37,7 +36,7 @@ func TestGetByID(t *testing.T) {
 
 	t.Run("GetByID_NOT_FOUND", func(t *testing.T) {
 		userRepository, _ := repository.NewUserRepositoryMock()
-		server := api.NewServer(api.Config{
+		server := NewServer(Config{
 			UserRepository: userRepository,
 		})
 

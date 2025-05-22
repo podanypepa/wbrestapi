@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/podanypepa/wbrestapi/pkg/repository"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,7 @@ func initDB() (*gorm.DB, error) {
 		return nil, fmt.Errorf("Failed to connect to database: %w", err)
 	}
 
-	if err = db.AutoMigrate(&User{}); err != nil {
+	if err = db.AutoMigrate(&repository.User{}); err != nil {
 		return nil, fmt.Errorf("AutoMigrate failed: %w", err)
 	}
 

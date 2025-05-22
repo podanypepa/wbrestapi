@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -13,13 +13,12 @@ import (
 	"github.com/alecthomas/assert"
 	"github.com/gofiber/fiber"
 	"github.com/google/uuid"
-	"github.com/podanypepa/wbrestapi/pkg/api"
 	"github.com/podanypepa/wbrestapi/pkg/repository"
 )
 
 func TestCreateUser(t *testing.T) {
 	t.Run("CreateUser", func(t *testing.T) {
-		user := &User{
+		user := &repository.User{
 			ExternalID:  uuid.NewString(),
 			Name:        "Jane Doe",
 			Email:       "jane@example.com",
@@ -33,7 +32,7 @@ func TestCreateUser(t *testing.T) {
 		req.Header.Add("Content-Length", fmt.Sprintf("%d", utf8.RuneCountInString(string(b))))
 
 		userRepository, _ := repository.NewUserRepositoryMock()
-		server := api.NewServer(api.Config{
+		server := NewServer(Config{
 			UserRepository: userRepository,
 		})
 
@@ -44,14 +43,14 @@ func TestCreateUser(t *testing.T) {
 		bodyBytes, err := io.ReadAll(res.Body)
 		assert.NoError(t, err)
 
-		var createdUser User
+		var createdUser repository.User
 		err = json.Unmarshal(bodyBytes, &createdUser)
 		assert.NoError(t, err)
 		assert.Equal(t, user.ExternalID, createdUser.ExternalID)
 	})
 
 	t.Run("InvalidUUID", func(t *testing.T) {
-		user := &User{
+		user := &repository.User{
 			ExternalID: "1",
 		}
 
@@ -61,7 +60,7 @@ func TestCreateUser(t *testing.T) {
 		req.Header.Add("Content-Length", fmt.Sprintf("%d", utf8.RuneCountInString(string(b))))
 
 		userRepository, _ := repository.NewUserRepositoryMock()
-		server := api.NewServer(api.Config{
+		server := NewServer(Config{
 			UserRepository: userRepository,
 		})
 
@@ -72,10 +71,10 @@ func TestCreateUser(t *testing.T) {
 		bodyBytes, err := io.ReadAll(res.Body)
 		assert.NoError(t, err)
 
-		var aErr apiError
+		var aErr Error
 		err = json.Unmarshal(bodyBytes, &aErr)
 		assert.NoError(t, err)
 
-		assert.Equal(t, aErr.Error, fmt.Sprintf("invalid uuid: %s", user.ExternalID))
+		assert.Equal(t, aErr.Error(), fmt.Sprintf("invalid uuid: %s", user.ExternalID))
 	})
 }
