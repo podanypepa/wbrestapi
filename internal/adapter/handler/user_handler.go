@@ -1,3 +1,4 @@
+// Package handler ...
 package handler
 
 import (
@@ -6,16 +7,19 @@ import (
 	"github.com/podanypepa/wbrestapi/internal/domain"
 )
 
+// UserHandler struct
 type UserHandler struct {
 	SaveUC port.SaveUserExecutor
 	GetUC  port.GetUserExecutor
 }
 
+// RegisterRoutes ...
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 	app.Post("/save", h.SaveUser)
 	app.Get("/:id", h.GetUser)
 }
 
+// SaveUser ...
 func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 	var user domain.User
 	if err := c.BodyParser(&user); err != nil {
@@ -29,6 +33,7 @@ func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
+// GetUser ...
 func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 	externalID := c.Params("id")
 
