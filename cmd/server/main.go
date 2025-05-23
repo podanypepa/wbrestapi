@@ -61,8 +61,9 @@ func main() {
 	port := cmp.Or(os.Getenv("PORT"), defaultPort)
 
 	go func() {
-		if err := app.Listen(port); err != nil {
+		if err := app.Listen(":" + port); err != nil {
 			log.Printf("Shutting down server: %v", err)
+			os.Exit(1)
 		}
 	}()
 
