@@ -17,6 +17,7 @@ type UserHandler struct {
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 	app.Post("/save", h.SaveUser)
 	app.Get("/:id", h.GetUser)
+	app.Get("/healthz", h.HealthCheck)
 }
 
 // SaveUser ...
@@ -42,4 +43,9 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
 	}
 	return c.JSON(user)
+}
+
+// HealthCheck ...
+func (h *UserHandler) HealthCheck(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
 }
