@@ -12,6 +12,7 @@ tool (
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.26.1

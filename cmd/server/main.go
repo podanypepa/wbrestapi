@@ -3,11 +3,17 @@ package main
 
 import (
 	"cmp"
+	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/podanypepa/wbrestapi/internal/adapter/handler"
 	"github.com/podanypepa/wbrestapi/internal/adapter/repository"
 	"github.com/podanypepa/wbrestapi/internal/application/usecase"
@@ -21,6 +27,10 @@ const (
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		slog.Warn(".env file not found. Falling back to system environment variables.")
+	}
+
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_USER"),
@@ -49,7 +59,24 @@ func main() {
 	h.RegisterRoutes(app)
 
 	port := cmp.Or(os.Getenv("PORT"), defaultPort)
-	if err := app.Listen(":" + port); err != nil {
-		log.Fatal(err)
+
+	go func() {
+		if err := app.Listen(port); err != nil {
+			log.Printf("Shutting down server: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Gracefully shutting down...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := app.ShutdownWithContext(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %v", err)
 	}
+
+	log.Println("Server exited properly")
 }
