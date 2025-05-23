@@ -76,8 +76,6 @@ func main() {
 	defer cancel()
 
 	if err := app.ShutdownWithContext(ctx); err != nil {
-		log.Fatalf("Server shutdown failed: %v", err)
+		log.Panicf("Server shutdown failed: %v", err)
 	}
-
-	log.Println("Server exited properly")
 }
