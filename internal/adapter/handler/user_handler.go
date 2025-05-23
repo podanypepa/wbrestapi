@@ -15,9 +15,9 @@ type UserHandler struct {
 
 // RegisterRoutes ...
 func (h *UserHandler) RegisterRoutes(app *fiber.App) {
+	app.Get("/healthz", h.HealthCheck)
 	app.Post("/save", h.SaveUser)
 	app.Get("/:id", h.GetUser)
-	app.Get("/healthz", h.HealthCheck)
 }
 
 // SaveUser ...
