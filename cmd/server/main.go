@@ -4,6 +4,7 @@ package main
 import (
 	"cmp"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,7 +34,9 @@ func main() {
 		panic("failed to connect to database")
 	}
 
-	db.AutoMigrate(&domain.User{})
+	if err := db.AutoMigrate(&domain.User{}); err != nil {
+		log.Fatal(err)
+	}
 
 	repo := &repository.UserGormRepository{DB: db}
 
@@ -46,5 +49,7 @@ func main() {
 	h.RegisterRoutes(app)
 
 	port := cmp.Or(os.Getenv("PORT"), defaultPort)
-	app.Listen(":" + port)
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatal(err)
+	}
 }
