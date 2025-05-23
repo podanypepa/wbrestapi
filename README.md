@@ -4,6 +4,21 @@ A simple RESTful microservice built in Go using [Fiber v2](https://github.com/go
 
 ---
 
+## Architecture
+
+This application has been refactored to follow the principles of **Hexagonal Architecture (also known as Ports and Adapters)**. The goal of this architecture is to isolate the business logic (domain and use cases) from the infrastructure (HTTP handlers, database access, etc.), enabling better testability, maintainability, and flexibility.
+
+### Key Components:
+
+- **Domain Layer**: Contains core business models and logic (`internal/domain`).
+- **Application Layer**: Defines use cases and interfaces (ports) required by the domain (`internal/application/usecase` and `internal/application/port`).
+- **Adapters Layer**: Implements interfaces for infrastructure components, such as repositories and HTTP handlers (`internal/adapter`).
+- **Entrypoint**: Application entrypoint (`cmd/server`) initializes the app and wires everything together.
+
+This separation allows the core application logic to remain completely independent from frameworks, databases, and other external systems.
+
+---
+
 ## 📄 Project Assignment
 
 This project implements the following task:
@@ -26,21 +41,6 @@ This project implements the following task:
 ---
 
 ## 🚀 Getting Started
-
-## Architecture
-
-This application has been refactored to follow the principles of **Hexagonal Architecture (also known as Ports and Adapters)**. The goal of this architecture is to isolate the business logic (domain and use cases) from the infrastructure (HTTP handlers, database access, etc.), enabling better testability, maintainability, and flexibility.
-
-### Key Components:
-
-- **Domain Layer**: Contains core business models and logic (`internal/domain`).
-- **Application Layer**: Defines use cases and interfaces (ports) required by the domain (`internal/application/usecase` and `internal/application/port`).
-- **Adapters Layer**: Implements interfaces for infrastructure components, such as repositories and HTTP handlers (`internal/adapter`).
-- **Entrypoint**: Application entrypoint (`cmd/server`) initializes the app and wires everything together.
-
-This separation allows the core application logic to remain completely independent from frameworks, databases, and other external systems.
-
----
 
 ### 1. Clone the repo
 
