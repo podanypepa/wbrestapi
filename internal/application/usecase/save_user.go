@@ -10,7 +10,10 @@ type SaveUserUseCase struct {
 	Repo port.UserRepository
 }
 
-// Execute ...
+// Execute validates and saves user
 func (uc *SaveUserUseCase) Execute(user *domain.User) error {
+	if err := user.Validate(); err != nil {
+		return err
+	}
 	return uc.Repo.Save(user)
 }
