@@ -2,6 +2,9 @@
 package handler
 
 import (
+	"errors"
+	"log/slog"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/podanypepa/wbrestapi/internal/application/port"
 	"github.com/podanypepa/wbrestapi/internal/domain"
@@ -11,6 +14,7 @@ import (
 type UserHandler struct {
 	SaveUC port.SaveUserExecutor
 	GetUC  port.GetUserExecutor
+	Logger *slog.Logger
 }
 
 // RegisterRoutes ...
@@ -24,13 +28,32 @@ func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 	var user domain.User
 	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
+		h.Logger.Error("failed to parse request body", "error", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid payload",
+		})
 	}
 
 	if err := h.SaveUC.Execute(&user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		if errors.Is(err, domain.ErrInvalidInput) {
+			h.Logger.Warn("invalid user input", "error", err)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "validation failed: " + err.Error(),
+			})
+		}
+		if errors.Is(err, domain.ErrUserAlreadyExists) {
+			h.Logger.Warn("user already exists", "external_id", user.ExternalID)
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error": "user with this external_id already exists",
+			})
+		}
+		h.Logger.Error("failed to save user", "error", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "internal server error",
+		})
 	}
 
+	h.Logger.Info("user saved successfully", "external_id", user.ExternalID)
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
@@ -40,8 +63,18 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 
 	user, err := h.GetUC.Execute(externalID)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+		if errors.Is(err, domain.ErrUserNotFound) {
+			h.Logger.Info("user not found", "external_id", externalID)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "user not found",
+			})
+		}
+		h.Logger.Error("failed to get user", "error", err, "external_id", externalID)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "internal server error",
+		})
 	}
+
 	return c.JSON(user)
 }
 
