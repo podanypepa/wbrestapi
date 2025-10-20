@@ -2,20 +2,23 @@
 
 A simple RESTful microservice built in Go using [Fiber v2](https://github.com/gofiber/fiber), [GORM](https://gorm.io), and PostgreSQL.
 
+[![CI](https://github.com/podanypepa/wbrestapi/workflows/CI/badge.svg)](https://github.com/podanypepa/wbrestapi/actions)
+
 ---
 
 ## Architecture
 
-This application has been refactored to follow the principles of **Hexagonal Architecture (also known as Ports and Adapters)**. The goal of this architecture is to isolate the business logic (domain and use cases) from the infrastructure (HTTP handlers, database access, etc.), enabling better testability, maintainability, and flexibility.
+This application follows the principles of **Hexagonal Architecture (Ports and Adapters)**. The goal is to isolate the business logic from infrastructure, enabling better testability, maintainability, and flexibility.
 
 ### Key Components:
 
-- **Domain Layer**: Contains core business models and logic (`internal/domain`).
-- **Application Layer**: Defines use cases and interfaces (ports) required by the domain (`internal/application/usecase` and `internal/application/port`).
-- **Adapters Layer**: Implements interfaces for infrastructure components, such as repositories and HTTP handlers (`internal/adapter`).
-- **Entrypoint**: Application entrypoint (`cmd/server`) initializes the app and wires everything together.
+- **Domain Layer**: Core business models and logic (`internal/domain`).
+- **Application Layer**: Use cases and interfaces/ports (`internal/application`).
+- **Adapters Layer**: Infrastructure implementations - HTTP handlers, database repositories (`internal/adapter`).
+- **Configuration Layer**: Centralized configuration management (`internal/config`).
+- **Entrypoint**: Application initialization and wiring (`cmd/server`).
 
-This separation allows the core application logic to remain completely independent from frameworks, databases, and other external systems.
+This separation keeps the core application logic independent from frameworks, databases, and external systems.
 
 ---
 
@@ -28,6 +31,65 @@ This project implements the following task:
 
 - `POST /save`: Store user data in the database.
 - `GET /:id`: Retrieve user data by `external_id`.
+
+---
+
+## 📚 API Documentation
+
+API documentation is available in OpenAPI 3.0 format: **[OpenAPI Specification](./api/openapi.yaml)**
+
+### API Endpoints
+
+#### Health Check
+```bash
+GET /healthz
+```
+**Response:**
+```json
+{"status": "ok"}
+```
+
+#### Create User
+```bash
+POST /save
+Content-Type: application/json
+
+{
+  "external_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "date_of_birth": "1990-01-15T00:00:00Z"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "id": 1,
+  "external_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "date_of_birth": "1990-01-15T00:00:00Z"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid input or validation error
+- `409 Conflict`: User with this external_id already exists
+- `429 Too Many Requests`: Rate limit exceeded
+- `500 Internal Server Error`: Server error
+
+#### Get User
+```bash
+GET /{external_id}
+```
+
+**Success Response (200):** Same as Create User response
+
+**Error Responses:**
+- `404 Not Found`: User not found
+- `429 Too Many Requests`: Rate limit exceeded
+- `500 Internal Server Error`: Server error
 
 ---
 
@@ -54,25 +116,12 @@ cd wbrestapi
 Copy `.env.localhost` and modify if needed:
 
 ```bash
-cp .env.example .env
+cp .env.localhost .env
 ```
 
-Example content:
-
-```env
-PORT=3000
-DB_USER=postgres
-DB_PASSWORD=secret
-DB_NAME=users
-DB_HOST=localhost
-DB_PORT=5432
-DB_SSL=disable
-```
-
-There is some .env config examples for running on localhost or in Docker.
-
-- [.env.localhost](./.env.localhost)
-- [.env.docker](./.env.docker)
+Environment config examples:
+- [.env.localhost](./.env.localhost) - For local development
+- [.env.docker](./.env.docker) - For Docker Compose
 
 ### 3. Run the project with Docker Compose
 
@@ -86,7 +135,7 @@ make docker-up
 
 ## 🧪 Running Tests
 
-### Integration test
+### Unit Tests
 
 ```bash
 make test
@@ -94,7 +143,16 @@ make test
 go test -v ./...
 ```
 
-This test spins up the application and tests the HTTP endpoints (`/save`, `/{id}`) using a Go `http.Client`.
+### Integration Tests
+
+Integration tests start a real server and test HTTP endpoints:
+
+```bash
+cd cmd/server
+go test -v
+```
+
+**Note:** Integration tests require PostgreSQL running on localhost:5432
 
 ---
 
@@ -126,17 +184,89 @@ rm -rf ./data
 
 ## 🛠️ CLI Tools for testing
 
-- [create_user.sh](./create_user.sh): shell script for creating a new user from the command line.
-- [get_user.sh](./get_user.sh): shell script for retrieving users from database by uuid from command line.
+- [create_user.sh](./create_user.sh): Create a new user from the command line
+- [get_user.sh](./get_user.sh): Retrieve users by UUID from the command line
 
 ---
 
 ## ✅ Features
 
-- JSON REST API with Go + Fiber
-- PostgreSQL + GORM
-- Graceful shutdown (SIGINT/SIGTERM)
-- Rejects new requests during shutdown
-- Dockerized and portable
-- Integration tested
+- ✨ JSON REST API with Go + Fiber
+- 🐘 PostgreSQL + GORM
+- 🔐 Input validation with structured errors
+- 🚦 Rate limiting (100 req/min by default)
+- 📝 Structured logging (JSON format)
+- 🛡️ Panic recovery middleware
+- 🏥 Health check endpoint
+- ⚡ Graceful shutdown (SIGINT/SIGTERM)
+- 🐳 Dockerized and portable
+- ✅ Comprehensive test coverage (unit + integration)
+- 📊 Database connection pooling
+- 🔄 CI/CD with GitHub Actions
+- 📖 OpenAPI 3.0 documentation
+- 🎯 Hexagonal Architecture
 
+---
+
+## 🔧 Configuration
+
+Configure via environment variables:
+
+### Server Configuration
+- `PORT` - Server port (default: 3000)
+- `SHUTDOWN_TIMEOUT` - Graceful shutdown timeout (default: 5s)
+- `RATE_LIMIT_MAX` - Max requests per window (default: 100)
+- `RATE_LIMIT_WINDOW` - Rate limit time window (default: 1m)
+- `LOG_LEVEL` - Logging level: info, debug (default: info)
+
+### Database Configuration
+- `DB_HOST` - Database host
+- `DB_USER` - Database user
+- `DB_PASSWORD` - Database password
+- `DB_NAME` - Database name
+- `DB_PORT` - Database port
+- `DB_SSL` - SSL mode (disable, require, etc.)
+- `DB_MAX_OPEN_CONNS` - Max open connections (default: 25)
+- `DB_MAX_IDLE_CONNS` - Max idle connections (default: 5)
+- `DB_CONN_MAX_LIFETIME` - Connection max lifetime (default: 5m)
+
+---
+
+## 🏗️ Project Structure
+
+```
+wbrestapi/
+├── api/                      # API documentation
+│   └── openapi.yaml         # OpenAPI 3.0 specification
+├── cmd/
+│   └── server/              # Application entrypoint
+│       ├── main.go
+│       └── integration_test.go
+├── internal/
+│   ├── adapter/             # Infrastructure adapters
+│   │   ├── handler/         # HTTP handlers
+│   │   └── repository/      # Database repositories
+│   ├── application/         # Application layer
+│   │   ├── port/           # Interfaces (ports)
+│   │   └── usecase/        # Use cases
+│   ├── config/             # Configuration
+│   └── domain/             # Domain models and logic
+├── .github/
+│   └── workflows/          # CI/CD pipelines
+├── Dockerfile
+├── compose.yaml
+├── Makefile
+└── README.md
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
