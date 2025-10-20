@@ -1,0 +1,223 @@
+openapi: 3.0.3
+info:
+  title: wbrestapi - User Management API
+  description: |
+    Simple RESTful microservice for user management.
+    
+    This API provides endpoints to store and retrieve user information.
+  version: 1.0.0
+  contact:
+    name: API Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: http://localhost:3000
+    description: Local Docker environment
+
+tags:
+  - name: users
+    description: User management operations
+  - name: health
+    description: Health check operations
+
+paths:
+  /healthz:
+    get:
+      tags:
+        - health
+      summary: Health check
+      description: Returns the health status of the API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /save:
+    post:
+      tags:
+        - users
+      summary: Create a new user
+      description: Stores user data in the database
+      operationId: saveUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+            examples:
+              validUser:
+                summary: Valid user example
+                value:
+                  external_id: "550e8400-e29b-41d4-a716-446655440000"
+                  name: "John Doe"
+                  email: "john.doe@example.com"
+                  date_of_birth: "1990-01-15T00:00:00Z"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidUUID:
+                  summary: Invalid UUID format
+                  value:
+                    error: "validation failed: invalid input"
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    error: "validation failed: invalid input"
+        '409':
+          description: User with this external_id already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "user with this external_id already exists"
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "too many requests"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{id}:
+    get:
+      tags:
+        - users
+      summary: Get user by external ID
+      description: Retrieves user data from the database by external_id (UUID)
+      operationId: getUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: External user ID (UUID)
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "user not found"
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    UserRequest:
+      type: object
+      required:
+        - external_id
+        - name
+        - email
+        - date_of_birth
+      properties:
+        external_id:
+          type: string
+          format: uuid
+          description: Unique external identifier (UUID v4)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: User's full name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "john.doe@example.com"
+        date_of_birth:
+          type: string
+          format: date-time
+          description: User's date of birth in ISO 8601 format
+          example: "1990-01-15T00:00:00Z"
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Internal database ID
+          example: 1
+        external_id:
+          type: string
+          format: uuid
+          description: Unique external identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          description: User's full name
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "john.doe@example.com"
+        date_of_birth:
+          type: string
+          format: date-time
+          description: User's date of birth
+          example: "1990-01-15T00:00:00Z"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "invalid input"
