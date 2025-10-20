@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -28,12 +30,16 @@ type MockGetUC struct{ mock.Mock }
 
 func (m *MockGetUC) Execute(externalID string) (*domain.User, error) {
 	args := m.Called(externalID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
 func setupApp(saveUC port.SaveUserExecutor, getUC port.GetUserExecutor) *fiber.App {
 	app := fiber.New()
-	h := &UserHandler{SaveUC: saveUC, GetUC: getUC}
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	h := &UserHandler{SaveUC: saveUC, GetUC: getUC, Logger: logger}
 	h.RegisterRoutes(app)
 	return app
 }
@@ -43,7 +49,7 @@ func TestSaveUser_Success(t *testing.T) {
 	app := setupApp(mockUC, nil)
 
 	user := domain.User{
-		ExternalID:  "uuid-abc-123",
+		ExternalID:  "550e8400-e29b-41d4-a716-446655440000",
 		Name:        "Josef",
 		Email:       "josef@example.com",
 		DateOfBirth: time.Now(),
@@ -59,7 +65,7 @@ func TestSaveUser_Success(t *testing.T) {
 	assert.Equal(t, fiber.StatusCreated, resp.StatusCode)
 
 	respBody, _ := io.ReadAll(resp.Body)
-	assert.Contains(t, string(respBody), "\"external_id\":\"uuid-abc-123\"")
+	assert.Contains(t, string(respBody), "\"external_id\":\"550e8400-e29b-41d4-a716-446655440000\"")
 }
 
 func TestSaveUser_BadPayload(t *testing.T) {
@@ -73,11 +79,53 @@ func TestSaveUser_BadPayload(t *testing.T) {
 	assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
 }
 
+func TestSaveUser_ValidationError(t *testing.T) {
+	mockUC := new(MockSaveUC)
+	app := setupApp(mockUC, nil)
+
+	user := domain.User{
+		ExternalID:  "invalid-uuid",
+		Name:        "Josef",
+		Email:       "josef@example.com",
+		DateOfBirth: time.Now(),
+	}
+
+	mockUC.On("Execute", mock.AnythingOfType("*domain.User")).Return(domain.ErrInvalidInput)
+
+	body, _ := json.Marshal(user)
+	req := httptest.NewRequest(http.MethodPost, "/save", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ := app.Test(req)
+
+	assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
+}
+
+func TestSaveUser_UserAlreadyExists(t *testing.T) {
+	mockUC := new(MockSaveUC)
+	app := setupApp(mockUC, nil)
+
+	user := domain.User{
+		ExternalID:  "550e8400-e29b-41d4-a716-446655440000",
+		Name:        "Josef",
+		Email:       "josef@example.com",
+		DateOfBirth: time.Now(),
+	}
+
+	mockUC.On("Execute", mock.AnythingOfType("*domain.User")).Return(domain.ErrUserAlreadyExists)
+
+	body, _ := json.Marshal(user)
+	req := httptest.NewRequest(http.MethodPost, "/save", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ := app.Test(req)
+
+	assert.Equal(t, fiber.StatusConflict, resp.StatusCode)
+}
+
 func TestGetUser_Success(t *testing.T) {
 	mockUC := new(MockGetUC)
 	app := setupApp(nil, mockUC)
 
-	externalID := "uuid-xyz-789"
+	externalID := "550e8400-e29b-41d4-a716-446655440000"
 	mockUser := &domain.User{
 		ID:          1,
 		ExternalID:  externalID,
@@ -101,10 +149,23 @@ func TestGetUser_NotFound(t *testing.T) {
 	app := setupApp(nil, mockUC)
 
 	externalID := "not-found-uuid"
-	mockUC.On("Execute", externalID).Return(&domain.User{}, errors.New("not found"))
+	mockUC.On("Execute", externalID).Return(nil, domain.ErrUserNotFound)
 
 	req := httptest.NewRequest(http.MethodGet, "/"+externalID, nil)
 	resp, _ := app.Test(req)
 
 	assert.Equal(t, fiber.StatusNotFound, resp.StatusCode)
+}
+
+func TestGetUser_InternalError(t *testing.T) {
+	mockUC := new(MockGetUC)
+	app := setupApp(nil, mockUC)
+
+	externalID := "550e8400-e29b-41d4-a716-446655440000"
+	mockUC.On("Execute", externalID).Return(nil, errors.New("database error"))
+
+	req := httptest.NewRequest(http.MethodGet, "/"+externalID, nil)
+	resp, _ := app.Test(req)
+
+	assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
 }
