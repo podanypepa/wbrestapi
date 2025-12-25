@@ -11,7 +11,7 @@ tool (
 )
 
 require (
-	github.com/go-playground/validator/v10 v10.30.0
+	github.com/go-playground/validator/v10 v10.30.1
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
