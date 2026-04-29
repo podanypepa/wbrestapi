@@ -4,8 +4,6 @@ package domain
 import (
 	"errors"
 	"time"
-
-	"github.com/go-playground/validator/v10"
 )
 
 // User struct represents the core domain model

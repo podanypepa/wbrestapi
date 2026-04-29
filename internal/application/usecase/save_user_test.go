@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -13,13 +14,13 @@ type MockUserRepository struct {
 	mock.Mock
 }
 
-func (m *MockUserRepository) Save(user *domain.User) error {
-	args := m.Called(user)
+func (m *MockUserRepository) Save(ctx context.Context, user *domain.User) error {
+	args := m.Called(ctx, user)
 	return args.Error(0)
 }
 
-func (m *MockUserRepository) FindByExternalID(externalID string) (*domain.User, error) {
-	args := m.Called(externalID)
+func (m *MockUserRepository) FindByExternalID(ctx context.Context, externalID string) (*domain.User, error) {
+	args := m.Called(ctx, externalID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -37,9 +38,10 @@ func TestSaveUserUseCase_Success(t *testing.T) {
 		DateOfBirth: time.Now(),
 	}
 
-	mockRepo.On("Save", user).Return(nil)
+	ctx := context.Background()
+	mockRepo.On("Save", ctx, user).Return(nil)
 
-	err := uc.Execute(user)
+	err := uc.Execute(ctx, user)
 	assert.NoError(t, err)
 	mockRepo.AssertExpectations(t)
 }

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/podanypepa/wbrestapi/internal/application/port"
 	"github.com/podanypepa/wbrestapi/internal/domain"
 )
@@ -11,6 +13,6 @@ type SaveUserUseCase struct {
 }
 
 // Execute saves user
-func (uc *SaveUserUseCase) Execute(user *domain.User) error {
-	return uc.Repo.Save(user)
+func (uc *SaveUserUseCase) Execute(ctx context.Context, user *domain.User) error {
+	return uc.Repo.Save(ctx, user)
 }

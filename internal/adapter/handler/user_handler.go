@@ -40,13 +40,13 @@ func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 	if err := h.Validator.Struct(req); err != nil {
 		h.Logger.Warn("validation failed", "error", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "validation failed",
-			"details": err.Error(), // Ideally, parse this to a more user-friendly format
+			"error":   "validation failed",
+			"details": FormatValidationErrors(err),
 		})
 	}
 
 	user := req.ToDomain()
-	if err := h.SaveUC.Execute(user); err != nil {
+	if err := h.SaveUC.Execute(c.Context(), user); err != nil {
 		if errors.Is(err, domain.ErrInvalidInput) {
 			h.Logger.Warn("invalid user input", "error", err)
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -73,7 +73,7 @@ func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 	externalID := c.Params("id")
 
-	user, err := h.GetUC.Execute(externalID)
+	user, err := h.GetUC.Execute(c.Context(), externalID)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			h.Logger.Info("user not found", "external_id", externalID)

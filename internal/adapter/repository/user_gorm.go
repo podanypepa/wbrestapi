@@ -2,6 +2,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/podanypepa/wbrestapi/internal/domain"
@@ -14,9 +15,9 @@ type UserGormRepository struct {
 }
 
 // Save ...
-func (r *UserGormRepository) Save(user *domain.User) error {
+func (r *UserGormRepository) Save(ctx context.Context, user *domain.User) error {
 	entity := FromDomain(user)
-	err := r.DB.Create(entity).Error
+	err := r.DB.WithContext(ctx).Create(entity).Error
 	if err != nil {
 		// Convert GORM specific errors to domain errors
 		errMsg := err.Error()
@@ -37,9 +38,9 @@ func (r *UserGormRepository) Save(user *domain.User) error {
 }
 
 // FindByExternalID ...
-func (r *UserGormRepository) FindByExternalID(externalID string) (*domain.User, error) {
+func (r *UserGormRepository) FindByExternalID(ctx context.Context, externalID string) (*domain.User, error) {
 	var entity UserEntity
-	if err := r.DB.Where("external_id = ?", externalID).First(&entity).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("external_id = ?", externalID).First(&entity).Error; err != nil {
 		// Convert GORM specific errors to domain errors
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound

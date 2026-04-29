@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -21,9 +22,10 @@ func TestGetUserUseCase_Success(t *testing.T) {
 		DateOfBirth: time.Now(),
 	}
 
-	mockRepo.On("FindByExternalID", externalID).Return(expectedUser, nil)
+	ctx := context.Background()
+	mockRepo.On("FindByExternalID", ctx, externalID).Return(expectedUser, nil)
 
-	user, err := uc.Execute(externalID)
+	user, err := uc.Execute(ctx, externalID)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUser, user)
 	mockRepo.AssertExpectations(t)
@@ -34,9 +36,10 @@ func TestGetUserUseCase_NotFound(t *testing.T) {
 	uc := &GetUserUseCase{Repo: mockRepo}
 
 	externalID := "non-existent"
-	mockRepo.On("FindByExternalID", externalID).Return(nil, domain.ErrUserNotFound)
+	ctx := context.Background()
+	mockRepo.On("FindByExternalID", ctx, externalID).Return(nil, domain.ErrUserNotFound)
 
-	user, err := uc.Execute(externalID)
+	user, err := uc.Execute(ctx, externalID)
 	assert.Equal(t, domain.ErrUserNotFound, err)
 	assert.Nil(t, user)
 	mockRepo.AssertExpectations(t)

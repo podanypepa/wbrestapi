@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
 
-	err = db.AutoMigrate(&domain.User{})
+	err = db.AutoMigrate(&UserEntity{})
 	require.NoError(t, err)
 
 	return db
@@ -32,7 +33,8 @@ func TestUserGormRepository_Save_Success(t *testing.T) {
 		DateOfBirth: time.Now(),
 	}
 
-	err := repo.Save(user)
+	ctx := context.Background()
+	err := repo.Save(ctx, user)
 	assert.NoError(t, err)
 	assert.NotZero(t, user.ID)
 }
@@ -48,7 +50,8 @@ func TestUserGormRepository_Save_DuplicateExternalID(t *testing.T) {
 		DateOfBirth: time.Now(),
 	}
 
-	err := repo.Save(user1)
+	ctx := context.Background()
+	err := repo.Save(ctx, user1)
 	require.NoError(t, err)
 
 	user2 := &domain.User{
@@ -58,7 +61,7 @@ func TestUserGormRepository_Save_DuplicateExternalID(t *testing.T) {
 		DateOfBirth: time.Now(),
 	}
 
-	err = repo.Save(user2)
+	err = repo.Save(ctx, user2)
 	assert.Equal(t, domain.ErrUserAlreadyExists, err)
 }
 
@@ -74,10 +77,11 @@ func TestUserGormRepository_FindByExternalID_Success(t *testing.T) {
 		DateOfBirth: time.Now(),
 	}
 
-	err := repo.Save(user)
+	ctx := context.Background()
+	err := repo.Save(ctx, user)
 	require.NoError(t, err)
 
-	found, err := repo.FindByExternalID(externalID)
+	found, err := repo.FindByExternalID(ctx, externalID)
 	assert.NoError(t, err)
 	assert.NotNil(t, found)
 	assert.Equal(t, externalID, found.ExternalID)
@@ -88,7 +92,8 @@ func TestUserGormRepository_FindByExternalID_NotFound(t *testing.T) {
 	db := setupTestDB(t)
 	repo := &UserGormRepository{DB: db}
 
-	found, err := repo.FindByExternalID("non-existent-uuid")
+	ctx := context.Background()
+	found, err := repo.FindByExternalID(ctx, "non-existent-uuid")
 	assert.Equal(t, domain.ErrUserNotFound, err)
 	assert.Nil(t, found)
 }

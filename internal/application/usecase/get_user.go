@@ -2,6 +2,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/podanypepa/wbrestapi/internal/application/port"
 	"github.com/podanypepa/wbrestapi/internal/domain"
 )
@@ -12,6 +14,6 @@ type GetUserUseCase struct {
 }
 
 // Execute ...
-func (uc *GetUserUseCase) Execute(externalID string) (*domain.User, error) {
-	return uc.Repo.FindByExternalID(externalID)
+func (uc *GetUserUseCase) Execute(ctx context.Context, externalID string) (*domain.User, error) {
+	return uc.Repo.FindByExternalID(ctx, externalID)
 }

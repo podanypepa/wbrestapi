@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
@@ -20,7 +21,6 @@ import (
 	"github.com/podanypepa/wbrestapi/internal/adapter/repository"
 	"github.com/podanypepa/wbrestapi/internal/application/usecase"
 	"github.com/podanypepa/wbrestapi/internal/config"
-	"github.com/podanypepa/wbrestapi/internal/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
