@@ -17,6 +17,8 @@ import (
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
@@ -112,6 +114,11 @@ func main() {
 
 	// Middleware
 	app.Use(recover.New())
+	app.Use(helmet.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*", // Adjust this in production to specific domains
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	// Prometheus metrics
 	prometheus := fiberprometheus.New("wbrestapi")
