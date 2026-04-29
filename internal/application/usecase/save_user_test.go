@@ -35,7 +35,7 @@ func TestSaveUserUseCase_Success(t *testing.T) {
 		ExternalID:  "550e8400-e29b-41d4-a716-446655440000",
 		Name:        "John Doe",
 		Email:       "john@example.com",
-		DateOfBirth: time.Now(),
+		DateOfBirth: time.Now().AddDate(-25, 0, 0),
 	}
 
 	ctx := context.Background()
@@ -44,4 +44,24 @@ func TestSaveUserUseCase_Success(t *testing.T) {
 	err := uc.Execute(ctx, user)
 	assert.NoError(t, err)
 	mockRepo.AssertExpectations(t)
+}
+
+func TestSaveUserUseCase_InvalidAge(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	uc := &SaveUserUseCase{Repo: mockRepo}
+
+	// User is only 5 years old
+	user := &domain.User{
+		ExternalID:  "550e8400-e29b-41d4-a716-446655440000",
+		Name:        "Young Kid",
+		Email:       "kid@example.com",
+		DateOfBirth: time.Now().AddDate(-5, 0, 0),
+	}
+
+	ctx := context.Background()
+	err := uc.Execute(ctx, user)
+
+	assert.Error(t, err)
+	assert.Equal(t, domain.ErrInvalidAge, err)
+	mockRepo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
 }

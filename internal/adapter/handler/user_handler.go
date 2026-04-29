@@ -47,10 +47,13 @@ func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 
 	user := req.ToDomain()
 	if err := h.SaveUC.Execute(c.Context(), user); err != nil {
-		if errors.Is(err, domain.ErrInvalidInput) {
-			h.Logger.Warn("invalid user input", "error", err)
+		if errors.Is(err, domain.ErrInvalidInput) ||
+			errors.Is(err, domain.ErrInvalidAge) ||
+			errors.Is(err, domain.ErrFutureBirthDate) {
+			h.Logger.Warn("domain validation failed", "error", err)
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "validation failed",
+				"error":   "validation failed",
+				"message": err.Error(),
 			})
 		}
 		if errors.Is(err, domain.ErrUserAlreadyExists) {
