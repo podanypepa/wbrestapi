@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/podanypepa/wbrestapi/internal/application/port"
 	"github.com/podanypepa/wbrestapi/internal/domain"
@@ -12,9 +13,10 @@ import (
 
 // UserHandler struct
 type UserHandler struct {
-	SaveUC port.SaveUserExecutor
-	GetUC  port.GetUserExecutor
-	Logger *slog.Logger
+	SaveUC    port.SaveUserExecutor
+	GetUC     port.GetUserExecutor
+	Logger    *slog.Logger
+	Validator *validator.Validate
 }
 
 // RegisterRoutes ...
@@ -26,19 +28,29 @@ func (h *UserHandler) RegisterRoutes(app *fiber.App) {
 
 // SaveUser ...
 func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
-	var user domain.User
-	if err := c.BodyParser(&user); err != nil {
+	var req UserRequest
+	if err := c.BodyParser(&req); err != nil {
 		h.Logger.Error("failed to parse request body", "error", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "invalid payload",
 		})
 	}
 
-	if err := h.SaveUC.Execute(&user); err != nil {
+	// Validate DTO
+	if err := h.Validator.Struct(req); err != nil {
+		h.Logger.Warn("validation failed", "error", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "validation failed",
+			"details": err.Error(), // Ideally, parse this to a more user-friendly format
+		})
+	}
+
+	user := req.ToDomain()
+	if err := h.SaveUC.Execute(user); err != nil {
 		if errors.Is(err, domain.ErrInvalidInput) {
 			h.Logger.Warn("invalid user input", "error", err)
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "validation failed: " + err.Error(),
+				"error": "validation failed",
 			})
 		}
 		if errors.Is(err, domain.ErrUserAlreadyExists) {
@@ -54,7 +66,7 @@ func (h *UserHandler) SaveUser(c *fiber.Ctx) error {
 	}
 
 	h.Logger.Info("user saved successfully", "external_id", user.ExternalID)
-	return c.Status(fiber.StatusCreated).JSON(user)
+	return c.Status(fiber.StatusCreated).JSON(NewUserResponse(user))
 }
 
 // GetUser ...
@@ -75,7 +87,7 @@ func (h *UserHandler) GetUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(user)
+	return c.JSON(NewUserResponse(user))
 }
 
 // HealthCheck ...

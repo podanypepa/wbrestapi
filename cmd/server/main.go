@@ -69,11 +69,14 @@ func main() {
 	configureDatabasePool(sqlDB, cfg)
 
 	// Auto-migrate schema
-	if err := db.AutoMigrate(&domain.User{}); err != nil {
+	if err := db.AutoMigrate(&repository.UserEntity{}); err != nil {
 		log.Fatal("failed to migrate database:", err)
 	}
 
 	slog.Info("database connection established and migrated")
+
+	// Initialize validator
+	v := validator.New()
 
 	// Initialize repositories and use cases
 	repo := &repository.UserGormRepository{DB: db}
@@ -106,9 +109,10 @@ func main() {
 
 	// Register routes
 	h := &handler.UserHandler{
-		SaveUC: saveUC,
-		GetUC:  getUC,
-		Logger: logger,
+		SaveUC:    saveUC,
+		GetUC:     getUC,
+		Logger:    logger,
+		Validator: v,
 	}
 	h.RegisterRoutes(app)
 

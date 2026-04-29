@@ -43,19 +43,3 @@ func TestSaveUserUseCase_Success(t *testing.T) {
 	assert.NoError(t, err)
 	mockRepo.AssertExpectations(t)
 }
-
-func TestSaveUserUseCase_ValidationError(t *testing.T) {
-	mockRepo := new(MockUserRepository)
-	uc := &SaveUserUseCase{Repo: mockRepo}
-
-	user := &domain.User{
-		ExternalID:  "invalid-uuid",
-		Name:        "John Doe",
-		Email:       "john@example.com",
-		DateOfBirth: time.Now(),
-	}
-
-	err := uc.Execute(user)
-	assert.Equal(t, domain.ErrInvalidInput, err)
-	mockRepo.AssertNotCalled(t, "Save")
-}

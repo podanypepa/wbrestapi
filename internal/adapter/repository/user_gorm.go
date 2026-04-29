@@ -15,7 +15,8 @@ type UserGormRepository struct {
 
 // Save ...
 func (r *UserGormRepository) Save(user *domain.User) error {
-	err := r.DB.Create(user).Error
+	entity := FromDomain(user)
+	err := r.DB.Create(entity).Error
 	if err != nil {
 		// Convert GORM specific errors to domain errors
 		errMsg := err.Error()
@@ -30,18 +31,20 @@ func (r *UserGormRepository) Save(user *domain.User) error {
 		}
 		return err
 	}
+	// Update domain model with generated ID
+	user.ID = entity.ID
 	return nil
 }
 
 // FindByExternalID ...
 func (r *UserGormRepository) FindByExternalID(externalID string) (*domain.User, error) {
-	var user domain.User
-	if err := r.DB.Where("external_id = ?", externalID).First(&user).Error; err != nil {
+	var entity UserEntity
+	if err := r.DB.Where("external_id = ?", externalID).First(&entity).Error; err != nil {
 		// Convert GORM specific errors to domain errors
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
 		return nil, err
 	}
-	return &user, nil
+	return entity.ToDomain(), nil
 }
