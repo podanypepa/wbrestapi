@@ -18,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	"github.com/podanypepa/wbrestapi/internal/adapter/handler"
 	"github.com/podanypepa/wbrestapi/internal/adapter/repository"
@@ -116,6 +117,12 @@ func main() {
 				"error": "too many requests",
 			})
 		},
+	}))
+
+	// Swagger UI
+	app.Static("/openapi.yaml", "./api/openapi.yaml")
+	app.Get("/swagger/*", swagger.New(swagger.Config{
+		URL: "/openapi.yaml",
 	}))
 
 	// Register routes

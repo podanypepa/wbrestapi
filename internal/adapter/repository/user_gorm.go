@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/mattn/go-sqlite3"
 	"github.com/podanypepa/wbrestapi/internal/domain"
 	"gorm.io/gorm"
 )
@@ -19,17 +21,23 @@ func (r *UserGormRepository) Save(ctx context.Context, user *domain.User) error 
 	entity := FromDomain(user)
 	err := r.DB.WithContext(ctx).Create(entity).Error
 	if err != nil {
-		// Convert GORM specific errors to domain errors
-		errMsg := err.Error()
-		// Check for unique constraint violations (PostgreSQL and SQLite)
-		if errors.Is(err, gorm.ErrDuplicatedKey) ||
-			(errMsg != "" && (
-				// PostgreSQL: "duplicate key value violates unique constraint"
-				// SQLite: "UNIQUE constraint failed"
-				errors.Is(err, gorm.ErrDuplicatedKey) ||
-				len(errMsg) > 15 && errMsg[:15] == "UNIQUE constrai")) {
+		// 1. Check for generic GORM duplicated key error
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return domain.ErrUserAlreadyExists
 		}
+
+		// 2. Check for PostgreSQL specific unique constraint violation (code 23505)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return domain.ErrUserAlreadyExists
+		}
+
+		// 3. Check for SQLite specific unique constraint violation (code 2067)
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) && (sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique || sqliteErr.ExtendedCode == 2067) {
+			return domain.ErrUserAlreadyExists
+		}
+
 		return err
 	}
 	// Update domain model with generated ID
