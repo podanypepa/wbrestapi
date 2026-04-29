@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -42,6 +44,14 @@ func setupApp(saveUC port.SaveUserExecutor, getUC port.GetUserExecutor) *fiber.A
 	app := fiber.New()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	v := validator.New()
+	// Use JSON tag names for validation errors
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
 	h := &UserHandler{
 		SaveUC:    saveUC,
 		GetUC:     getUC,
@@ -107,7 +117,7 @@ func TestSaveUser_ValidationError(t *testing.T) {
 	assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
 	respBody, _ := io.ReadAll(resp.Body)
 	assert.Contains(t, string(respBody), "validation failed")
-	assert.Contains(t, string(respBody), "externalid")
+	assert.Contains(t, string(respBody), "external_id")
 	assert.Contains(t, string(respBody), "must be a valid UUID")
 }
 

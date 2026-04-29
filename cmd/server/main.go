@@ -9,6 +9,8 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"reflect"
+	"strings"
 	"syscall"
 
 	"github.com/go-playground/validator/v10"
@@ -77,6 +79,15 @@ func main() {
 
 	// Initialize validator
 	v := validator.New()
+
+	// Use JSON tag names for validation errors
+	v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		if name == "-" {
+			return ""
+		}
+		return name
+	})
 
 	// Initialize repositories and use cases
 	repo := &repository.UserGormRepository{DB: db}
