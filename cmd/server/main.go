@@ -178,12 +178,19 @@ func main() {
 	defer cancel()
 
 	if err := app.ShutdownWithContext(ctx); err != nil {
-		log.Printf("Server shutdown error: %v", err)
+		slog.Error("server shutdown error", "error", err)
 	}
 
 	// Close database connection
+	stats := sqlDB.Stats()
+	slog.Info("closing database connection pool", 
+		"open_connections", stats.OpenConnections,
+		"in_use", stats.InUse,
+		"idle", stats.Idle,
+	)
+
 	if err := sqlDB.Close(); err != nil {
-		log.Printf("Database close error: %v", err)
+		slog.Error("database close error", "error", err)
 	}
 
 	slog.Info("server stopped")
