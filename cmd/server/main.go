@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"log"
 	"log/slog"
@@ -19,14 +20,21 @@ import (
 	fiberlogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/joho/godotenv"
 	"github.com/podanypepa/wbrestapi/internal/adapter/handler"
 	"github.com/podanypepa/wbrestapi/internal/adapter/repository"
 	"github.com/podanypepa/wbrestapi/internal/application/usecase"
 	"github.com/podanypepa/wbrestapi/internal/config"
-	"gorm.io/driver/postgres"
+	gormpg "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
 
 func main() {
 	// Load environment variables
@@ -57,7 +65,7 @@ func main() {
 		cfg.Database.SSLMode,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(gormpg.Open(dsn), &gorm.Config{
 		Logger: nil, // Disable GORM's default logger
 	})
 	if err != nil {
@@ -71,9 +79,9 @@ func main() {
 	}
 	configureDatabasePool(sqlDB, cfg)
 
-	// Auto-migrate schema
-	if err := db.AutoMigrate(&repository.UserEntity{}); err != nil {
-		log.Fatal("failed to migrate database:", err)
+	// Run database migrations
+	if err := runMigrations(sqlDB); err != nil {
+		log.Fatal("failed to run database migrations:", err)
 	}
 
 	slog.Info("database connection established and migrated")
@@ -192,4 +200,27 @@ func customErrorHandler(c *fiber.Ctx, err error) error {
 	return c.Status(code).JSON(fiber.Map{
 		"error": message,
 	})
+}
+
+func runMigrations(db *sql.DB) error {
+	d, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return fmt.Errorf("could not create migration target: %w", err)
+	}
+
+	source, err := iofs.New(migrationsFS, "migrations")
+	if err != nil {
+		return fmt.Errorf("could not create migration source: %w", err)
+	}
+
+	m, err := migrate.NewWithInstance("iofs", source, "postgres", d)
+	if err != nil {
+		return fmt.Errorf("could not create migrate instance: %w", err)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("could not run up migrations: %w", err)
+	}
+
+	return nil
 }
