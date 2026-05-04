@@ -20,13 +20,6 @@ This application follows the principles of **Hexagonal Architecture (Ports and A
 
 ---
 
-## 📄 Project Assignment
-
-This project implements the following task:
-**[View assignment](./assigment.md)**
-
----
-
 ## 📚 API & Documentation
 
 - **OpenAPI Spec**: Available in [api/openapi.yaml](./api/openapi.yaml).
