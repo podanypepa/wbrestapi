@@ -13,7 +13,7 @@ type GetUserUseCase struct {
 	Repo port.UserRepository
 }
 
-// Execute ...
+// Execute retrieves a user by external ID
 func (uc *GetUserUseCase) Execute(ctx context.Context, externalID string) (*domain.User, error) {
 	return uc.Repo.FindByExternalID(ctx, externalID)
 }
