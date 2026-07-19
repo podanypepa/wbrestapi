@@ -7,7 +7,7 @@ import (
 	"github.com/podanypepa/wbrestapi/internal/domain"
 )
 
-// SaveUserUseCase ...
+// SaveUserUseCase is the use case for saving a user
 type SaveUserUseCase struct {
 	Repo port.UserRepository
 }

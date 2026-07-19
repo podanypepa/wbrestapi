@@ -8,11 +8,11 @@ import (
 
 // User struct represents the core domain model
 type User struct {
-	ID          uint
+	DateOfBirth time.Time
 	ExternalID  string
 	Name        string
 	Email       string
-	DateOfBirth time.Time
+	ID          uint
 }
 
 // Custom errors
