@@ -45,7 +45,7 @@ func (r *UserGormRepository) Save(ctx context.Context, user *domain.User) error 
 	return nil
 }
 
-// FindByExternalID ...
+// FindByExternalID retrieves a user by external ID
 func (r *UserGormRepository) FindByExternalID(ctx context.Context, externalID string) (*domain.User, error) {
 	var entity UserEntity
 	if err := r.DB.WithContext(ctx).Where("external_id = ?", externalID).First(&entity).Error; err != nil {
