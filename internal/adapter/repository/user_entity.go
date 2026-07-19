@@ -8,11 +8,11 @@ import (
 
 // UserEntity represents the GORM model for database
 type UserEntity struct {
-	ID          uint   `gorm:"primaryKey"`
+	DateOfBirth time.Time
 	ExternalID  string `gorm:"uniqueIndex"`
 	Name        string
 	Email       string
-	DateOfBirth time.Time
+	ID          uint `gorm:"primaryKey"`
 }
 
 // TableName overrides the table name used by UserEntity to `users`
