@@ -16,7 +16,7 @@ type UserGormRepository struct {
 	DB *gorm.DB
 }
 
-// Save ...
+// Save saves a user to the database
 func (r *UserGormRepository) Save(ctx context.Context, user *domain.User) error {
 	entity := FromDomain(user)
 	err := r.DB.WithContext(ctx).Create(entity).Error
