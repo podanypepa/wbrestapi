@@ -102,6 +102,8 @@ github.com/andybalholm/brotli v1.2.2 h1:HzTuoo2ErYQqf5qvcJInB8uvqSVxRttzkFexPWtn
 github.com/andybalholm/brotli v1.2.2/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/ansrivas/fiberprometheus/v2 v2.17.0 h1:p0gqs5LsSCWGoSFF44fCJkyU+XcE6TLRqEMu80b2iCo=
 github.com/ansrivas/fiberprometheus/v2 v2.17.0/go.mod h1:giWBvbFSHOHG8N2wjYhQG23oc/2pF9v1mN8CdZs5Z2g=
+github.com/ansrivas/fiberprometheus/v2 v2.18.0 h1:cxjAl2urLYbUu0/2KusrA8Vxkk/8v2WRzmlrhvsR3GE=
+github.com/ansrivas/fiberprometheus/v2 v2.18.0/go.mod h1:3YCvolUcblrr6IPZqPmHvWw5NJHHNrKS58XIrYXMinY=
 github.com/armon/go-radix v1.0.1-0.20221118154546-54df44f2176c h1:651/eoCRnQ7YtSjAnSzRucrJz+3iGEFt+ysraELS81M=
 github.com/armon/go-radix v1.0.1-0.20221118154546-54df44f2176c/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/ashanbrown/forbidigo v1.6.0 h1:D3aewfM37Yb3pxHujIPSpTf6oQk9sc9WZi8gerOIVIY=

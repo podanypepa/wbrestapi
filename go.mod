@@ -12,7 +12,7 @@ tool (
 )
 
 require (
-	github.com/ansrivas/fiberprometheus/v2 v2.17.0
+	github.com/ansrivas/fiberprometheus/v2 v2.18.0
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/gofiber/fiber/v2 v2.52.14
 	github.com/gofiber/swagger v1.1.1
